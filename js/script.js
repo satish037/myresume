@@ -1,342 +1,342 @@
-/*
- Template Name: Mulan / CV Template + RTL
- Template URI: https://elmanawy.info/demo/mulan
- Description: Mulan for resume / cv / portfolio template that's suitable for freelanner and anyone want to create online portflolio
- Author: Marwa El-Manawy
- Author URL: https://elmanawy.info
- Version: 1.0
- */
+(function($) {
+'use strict';
 
-/*================================================
- [  Table of contents  ]
- ================================================
- :: Preloader
- :: Site Header
- :: Page loader
- :: Typing Text
- :: Text rotation
- :: Home Slider
- :: Counter - Fun Fact
- :: Testenomials
- :: Clients
- :: Portfolio Filter
- :: LightBox
- :: AJAX Contact Form
- :: Google Map
- :: WOW Animation
- ======================================
- [ End table content ]
- ======================================*/
+    /* ============================================================ */
+    /* PRELOADER START
+    /* ============================================================ */
+    setTimeout(function() {
+        var e = !!/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(
+                navigator.userAgent
+            ),
+            s = document.getElementById('preloader');
+            e ? s && s.parentNode && s.parentNode.removeChild(s) :
+            (setTimeout(function() {
+                    s.classList.add('preloaded');
+                }, 1000),
+                setTimeout(function() {
+                    s && s.parentNode && s.parentNode.removeChild(s);
+                }, 
+            2000));
+    }, 1000);
+    /* Preloader End */
 
-jQuery(document).ready(function () {
-    "use strict";
+    /* ============================================================ */
+    /* MOBILE MENU START
+    /* ============================================================ */
+    function mobile_menu(selector, actionSelector) {
+        var mobile_menu = $(selector);
+        mobile_menu.on('click', function() {
+            $(selector).toggleClass('is-menu-open');
+        });
 
-    /*======================================
-     Site Header
-     ======================================*/
-    $('#header-main-menu li a, .home-buttons a').on("click", function (e) {
-        if ($(e.target).is('.header-main-menu a, .home-buttons a')) {
-            $('.header-main-menu li a').removeClass('active');
-            $(this).addClass('active');
-            $(".sub-page").hide();
-            if (location.pathname.replace(/^\//, '') == e.target.pathname.replace(/^\//, '') && location.hostname == e.target.hostname) {
-                var target = $(e.target.hash);
-                target = target.length ? target : $('[name=' + e.target.hash.slice(1) + ']');
-                if (target.length) {
-                    var gap = 0;
-                    $(e.target.hash, 'html', 'body').animate({
-                        opacity: 'show',
-                        duration: "slow",
-                        scrollTop: target.offset().top - gap
-                    });
-                }
+        var hamburgerbtn = $(selector);
+        hamburgerbtn.on('click', function() {
+            $(actionSelector).toggleClass('is-menu-open');
+        });
+
+        $(document).on('click', function(e) {
+            var selectorType = $(actionSelector).add(mobile_menu);
+            if (
+                selectorType.is(e.target) !== true &&
+                selectorType.has(e.target).length === 0
+            ) {
+                $(actionSelector).removeClass('is-menu-open');
+                $(selector).removeClass('is-menu-open');
             }
-            if ($(e.target).is('.home-buttons a')) {
-                $("#header-main-menu li a[href='#contact']").addClass('active');
+        });
+        $('.mobile-menu .main-menu a, .menu-overlay').on('click', function(e) {
+            $(actionSelector).removeClass('is-menu-open');
+            $(selector).removeClass('is-menu-open');
+        });
+    }
+    mobile_menu(
+        '.menu_toggle, .close-menu ',
+        '.mobile-menu, .minfo__app, .menu-overlay'
+    );
+    /* Mobile menu End */
+
+
+    /* ============================================================ */
+    /* Scrollit Scrollspy start
+    /* ============================================================ */
+    $.scrollIt({
+        scrollTime: 1000,
+        topOffset: 0,
+    });
+    /* Scrollit Scrollspy End */
+
+    /* ============================================================ */
+    /* Counterup Fun-facts start
+    /* ============================================================ */
+    $('.counters .number span').counterUp({
+        delay: 10,
+        time: 1500,
+    });
+    /* Counterup Fun-facts End */
+
+    /* ============================================================ */
+    /* Hero Section Logo Slider start
+    /* ============================================================ */
+    let logoSlider = new Swiper('.logo-slider .swiper', {
+        spaceBetween: 30,
+        slidesPerView: 3,
+        loop: true,
+        speed: 3000,
+        autoplay: {
+            delay: 0,
+            disableOnInteraction: false,
+        },
+        allowTouchMove: false,
+        breakpoints: {
+            576: {
+                slidesPerView: 3,
+            },
+            768: {
+                slidesPerView: 4,
+            },
+            1200: {
+                slidesPerView: 4,
+            },
+            1400: {
+                slidesPerView: 5,
+            },
+        },
+    });
+
+    /* ============================================================ */
+    /* Skills Slider start
+    /* ============================================================ */
+    var skillSlider = new Swiper('.skills-slider .swiper', {
+        spaceBetween: 30,
+        slidesPerView: 2,
+        loop: !1,
+        speed: 800,
+        breakpoints: {
+            600: {
+                slidesPerView: 3,
+            },
+            800: {
+                slidesPerView: 4,
+            },
+        },
+        navigation: {
+            nextEl: '#skill .button-next',
+            prevEl: '#skill .button-prev',
+        },
+        on: {
+            init: function() {
+                $('.skills-slider-navigation .counter').html(
+                    '<span class="text-theme">' +
+                    (this.realIndex + 1) +
+                    '</span>' +
+                    '/' +
+                    this.slides.length
+                );
+            },
+            slideChange: function() {
+                $('.skills-slider-navigation .counter').html(
+                    '<span class="text-theme">' +
+                    (this.realIndex + 1) +
+                    '</span>' +
+                    '/' +
+                    this.slides.length
+                );
+            },
+        },
+    });
+    // Skills Slider End
+
+    /* ============================================================ */
+    /* Testimonial Slider start
+    /* ============================================================ */
+    let testimonialSlider = new Swiper('.testimonial-slider .swiper', {
+        spaceBetween: 30,
+        slidesPerView: 1,
+        loop: false,
+        speed: 800,
+        breakpoints: {
+            768: {
+                slidesPerView: 2,
+            },
+        },
+        navigation: {
+            nextEl: '.testimonial-slider-navigation .button-next',
+            prevEl: '.testimonial-slider-navigation .button-prev',
+        },
+        on: {
+            init: function() {
+                $('.testimonial-slider-navigation .counter').html(
+                    '<span class="text-theme">' +
+                    (this.realIndex + 1) +
+                    '</span>' +
+                    '/' +
+                    this.slides.length
+                );
+            },
+            slideChange: function() {
+                $('.testimonial-slider-navigation .counter').html(
+                    '<span class="text-theme">' +
+                    (this.realIndex + 1) +
+                    '</span>' +
+                    '/' +
+                    this.slides.length
+                );
+            },
+        },
+    });
+    // Testimonial Slider End
+
+    /* ============================================================ */
+    /* Progressbar start
+    /* ============================================================ */
+    var CroWey = $('.progressbar');
+    if (CroWey.length > 0) {
+        CroWey.waypoint(
+            function() {
+                $('.bar').each(function() {
+                    $(this).find('.progress-content').animate({
+                            width: $(this).attr('data-percentage'),
+                        },
+                        2000
+                    );
+                });
+            }, {
+                offset: '100%'
             }
+        );
+    }
+    // Progressbar End
+
+    /* ============================================================ */
+    /* Custom Cursor start
+    /* ============================================================ */
+    if ($('.custom_cursor').length) {
+        var cursor = document.querySelector('.custom_cursor_one');
+        var cursorInner = document.querySelector('.custom_cursor_two');
+        var anchors = document.querySelectorAll('a');
+
+        document.addEventListener('mousemove', function(e) {
+            var x = e.clientX;
+            var y = e.clientY;
+            cursor.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
+        });
+        document.addEventListener('mousemove', function(e) {
+            var x = e.clientX;
+            var y = e.clientY;
+            cursorInner.style.left = x + 'px';
+            cursorInner.style.top = y + 'px';
+        });
+        document.addEventListener('mousedown', function() {
+            cursor.classList.add('click');
+            cursorInner.classList.add('custom_cursor_hover');
+        });
+        document.addEventListener('mouseup', function() {
+            cursor.classList.remove('click');
+            cursorInner.classList.remove('custom_cursor_hover');
+        });
+        anchors.forEach((item) => {
+            item.addEventListener('mouseover', () => {
+                cursor.classList.add('custom_cursor_hover');
+            });
+            item.addEventListener('mouseleave', () => {
+                cursor.classList.remove('custom_cursor_hover');
+            });
+        });
+    }
+    // Custom Cursor End
+
+
+    /* ============================================================ */
+    /* Animated Circle Progress start
+    /* ============================================================ */
+    function animateElements() {
+        $('.minfo__sidebar .progressCircle').each(function() {
+            var elementPos = $(this).offset().top;
+            var topOfWindow = $(window).scrollTop();
+            var percent = $(this).find('.circle').attr('data-percent');
+            var animate = $(this).data('animate');
+            if (elementPos < topOfWindow + $(window).height() - 30 && !animate) {
+                $(this).data('animate', true);
+                $(this).find('.circle').circleProgress({
+                    startAngle: -Math.PI / 30,
+                    value: percent / 100,
+                    thickness: 2,
+                    lineCap: 'round',
+                    emptyFill: '#777777',
+                    fill: '#00BC91',
+                    size: $('.circle').width(),
+                }).on(
+                    'circle-animation-progress',
+                    function(event, progress, stepValue) {
+                        $(this).parent().find('.label').html((stepValue * 100).toFixed(0) + '%');
+                    }
+                ).stop();
+            }
+        });
+        $('.skills-slider .progressCircle').each(function() {
+            var elementPos = $(this).offset().top;
+            var topOfWindow = $(window).scrollTop();
+            var percent = $(this).find('.circle').attr('data-percent');
+            var animate = $(this).data('animate');
+            if (elementPos < topOfWindow + $(window).height() - 30 && !animate) {
+                $(this).data('animate', true);
+                $(this).find('.circle').circleProgress({
+                    startAngle: -Math.PI / 2,
+                    value: percent / 100,
+                    thickness: 1.5,
+                    lineCap: 'round',
+                    emptyFill: '#777777',
+                    fill: '#00BC91',
+                    size: $('.skills-slider .circle').width(),
+                }).on(
+                    'circle-animation-progress',
+                    function(event, progress, stepValue) {
+                        $(this).parent().find('.label').html((stepValue * 100).toFixed(0) + '%');
+                    }
+                ).stop();
+            }
+        });
+    }
+    setTimeout(function() {
+        animateElements();
+        $(window).scroll(animateElements);
+    }, 2500);
+
+
+    /* ============================================================ */
+    /* Style Switcher
+    /* ============================================================ */
+    $('.style-switcher .toggle-btn').on('click', function() {
+        $('.style-switcher').toggleClass('active');
+    });
+    $(document).on('click', function(e) {
+        var style_switcher = $('.style-switcher.active');
+        if (style_switcher.is(e.target) !== true && style_switcher.has(e.target).length === 0) {
+            $(style_switcher).removeClass("active");
         }
     });
 
 
-    /*************************
-     Responsive Menu
-     *************************/
-    $('.responsive-icon').on("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!$(this).hasClass('active')) {
-            $(this).addClass('active');
-            $('.header').animate({'margin-left': 285}, 300);
+    /* ============================================================ */
+    /* Scroll Top
+    /* ============================================================ */
+    $('body').append(
+        "<a href='#top' title='Scroll Top' id='scroll-top' class='topbutton'><i class='far fa-level-up-alt'></i></a>"
+    );
+    var $scrolltop = $('#scroll-top');
+    $(window).on('scroll', function () {
+        if ($(this).scrollTop() > $(this).height()) {
+            $scrolltop.addClass('btn-show').removeClass('btn-hide');
         } else {
-            $(this).removeClass('active');
-            $('.header').animate({'margin-left': 0}, 300);
+            $scrolltop.addClass('btn-hide').removeClass('btn-show');
         }
+    });
+    $("a[href='#top']").on('click', function () {
+        $('html, body').animate( {
+                scrollTop: 0,
+        }, 1000);
         return false;
     });
 
-    $('.header a').on("click", function (e) {
-        $('.responsive-icon').removeClass('active');
-        $('.header').animate({'margin-left': 0}, 300);
-
-    });
-    /*======================================
-     Typing Text
-     ======================================*/
-    $(".typed").typed({
-        stringsElement: $('.typed-strings'),
-        typeSpeed: 20,
-        backDelay: 500,
-        loop: true,
-        autoplay: true,
-        autoplayTimeout: 500,
-        contentType: 'html',
-        loopCount: true,
-        resetCallback: function () {
-            newTyped();
-        }
-    });
-
-
-    /*======================================
-     Text rotation
-     ======================================*/
-    $('.text-rotation').owlCarousel({
-        dots: !1,
-        nav: !1,
-        margin: 0,
-        items: 1,
-        autoplay: true,
-        autoplayHoverPause: !1,
-        autoplayTimeout: 1000,
-        loop: true,
-        animateOut: 'zoomOut',
-        animateIn: 'zoomIn'
-    });
-
-    /*======================================
-     Home Slider
-     ======================================*/
-    $('.home-slides').owlCarousel({
-        navigation: false,
-        pagination: false,
-        items: 1,
-        loop: true,
-        dots: true,
-        autoplay: 3000,
-        autoplayTimeout: 4000,
-        smartSpeed: 1000,
-        responsiveClass: true,
-        responsive: {
-            0: {
-                items: 1
-            },
-            480: {
-                items: 1
-            },
-            768: {
-                items: 1
-            },
-            1200: {
-                items: 1
-            }
-        }
-    });
-
-    /*======================================
-     Counter - Fun Fact
-     ======================================*/
-    $('.counter-block-value').each(function () {
-        var $this = $(this),
-                countTo = $this.attr('data-count');
-        $({countNum: $this.text()}).animate({
-            countNum: countTo
-        },
-                {
-                    duration: 8000,
-                    easing: 'linear',
-                    step: function () {
-                        $this.text(Math.floor(this.countNum));
-                    },
-                    complete: function () {
-                        $this.text(this.countNum);
-                    }
-                });
-    });
-
-
-    /*======================================
-     Testenomials
-     ======================================*/
-    $('.testimonials').owlCarousel({
-        navigation: false,
-        pagination: false,
-        autoPlay: true,
-        items: 2,
-        loop: !1,
-        dots: true,
-        margin: 25,
-        responsive: {
-            0: {
-                items: 1
-            },
-            480: {
-                items: 1
-            },
-            768: {
-                items: 1
-            },
-            1200: {
-                items: 2
-            }
-        }
-    });
-
-
-    /*======================================
-     Clients
-     ======================================*/
-    $('.clients').owlCarousel({
-        navigation: false,
-        pagination: false,
-        dots: false,
-        loop: true,
-//        autoplay: true,
-        autoplayTimeout: 2000,
-        autoplayHoverPause: true,
-        margin: 10,
-        autoHeight: !1,
-        responsive: {
-            0: {
-                items: 2
-            },
-            768: {
-                items: 4
-            },
-            1200: {
-                items: 6
-            }
-        }
-    });
-
-
-    /*======================================
-     Portfolio Filter
-     ======================================*/
-    $(function () {
-        var selectedClass = "";
-        $(".filter-tabs").find('button:first-child').addClass('active-filter');
-        $(".fil-cat").click(function () {
-            $(".filter-tabs").find('button').removeClass('active-filter');
-            $(this).addClass('active-filter');
-            selectedClass = $(this).attr("data-rel");
-            $("#portfolio-page").fadeTo(100, 0.1);
-            $("#portfolio-page .portfolio-item").not("." + selectedClass).fadeOut().removeClass('portfolio-item');
-            setTimeout(function () {
-                $("." + selectedClass).fadeIn().addClass('portfolio-item');
-                $("#portfolio-page").fadeTo(300, 1);
-            }, 300);
-
-        });
-    });
-
-
-    /*======================================
-     LightBox
-     ======================================*/
-    $('[data-rel^=lightcase]').lightcase({
-        maxWidth: 1100,
-        maxHeight: 800
-    });
-
-
-    /*======================================
-     AJAX Contact Form
-     ======================================*/
-
-    $("#contact-form").on("submit", function (e)
-    {
-        $('#show_contact_msg').html('<div class=loading>Sending Message..</div>');
-        var name = $('#name').val();
-        var email = $('#email').val();
-        var comment = $('#comment').val();
-        var formURL = $(this).attr("action");
-        var data = {
-            name: name,
-            email: email,
-            comment: comment,
-        }
-        $.ajax(
-                {
-                    url: formURL,
-                    type: "POST",
-                    data: data,
-                    success: function (res) {
-                        if (res === '1') {
-                            $('#show_contact_msg').html('<div class=gen><i class="fa fa-smile-o" aria-hidden="true"></i> Thank you very much, We will notify you when we lunch</div>');
-                            $("#contact-form")[0].reset();
-                        }
-
-                        if (res === '5') {
-                            $('#show_contact_msg').html('<div class=err><i class="fa fa-frown-o" aria-hidden="true"></i> Please enter a valid email address</div>');
-                        }
-                    }
-                });
-        e.preventDefault();
-    });
-
-
-    /*======================================
-     Google Map
-     ======================================*/
-    if ($('#google-map').length > 0) {
-        //set your google maps parameters
-        var latitude = 51.5255069,
-                longitude = -0.0836207,
-                map_zoom = 14;
-
-        //google map custom marker icon 
-        var marker_url = 'images/map-marker.png';
-
-        //we define here the style of the map
-        var style = [{"featureType": "landscape", "stylers": [{"saturation": -100}, {"lightness": 65}, {"visibility": "on"}]}, {"featureType": "poi", "stylers": [{"saturation": -100}, {"lightness": 51}, {"visibility": "simplified"}]}, {"featureType": "road.highway", "stylers": [{"saturation": -100}, {"visibility": "simplified"}]}, {"featureType": "road.arterial", "stylers": [{"saturation": -100}, {"lightness": 30}, {"visibility": "on"}]}, {"featureType": "road.local", "stylers": [{"saturation": -100}, {"lightness": 40}, {"visibility": "on"}]}, {"featureType": "transit", "stylers": [{"saturation": -100}, {"visibility": "simplified"}]}, {"featureType": "administrative.province", "stylers": [{"visibility": "off"}]}, {"featureType": "water", "elementType": "labels", "stylers": [{"visibility": "on"}, {"lightness": -25}, {"saturation": -100}]}, {"featureType": "water", "elementType": "geometry", "stylers": [{"hue": "#ffff00"}, {"lightness": -25}, {"saturation": -97}]}];
-
-        //set google map options
-        var map_options = {
-            center: new google.maps.LatLng(latitude, longitude),
-            zoom: map_zoom,
-            panControl: true,
-            zoomControl: true,
-            mapTypeControl: true,
-            streetViewControl: true,
-            mapTypeId: google.maps.MapTypeId.ROADMAP,
-            scrollwheel: false,
-            styles: style,
-        }
-        //inizialize the map
-        var map = new google.maps.Map(document.getElementById('google-map'), map_options);
-        //add a custom marker to the map				
-        var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(latitude, longitude),
-            map: map,
-            visible: true,
-            icon: marker_url,
-        });
-    }
-
-    /*======================================
-     WOW Animation
-     ======================================*/
-    new WOW().init();
-
-    $(".dark-mode").on("click", function (e) {
-        $("body").addClass("darkMode");
-    });
-
-    /*======================================
-     Preloader
-     ======================================*/
-    $('#preloader').fadeOut('slow', function () {
-        $(this).remove();
-    });
-});
- 
+})(jQuery);
+// jQuery Ended
