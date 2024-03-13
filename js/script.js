@@ -113,10 +113,10 @@
         speed: 800,
         breakpoints: {
             600: {
-                slidesPerView: 3,
+                slidesPerView: 4,
             },
             800: {
-                slidesPerView: 4,
+                slidesPerView: 6,
             },
         },
         navigation: {
