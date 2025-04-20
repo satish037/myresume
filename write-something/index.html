@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Prescription Writer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .prescription-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+        }
+        .canvas-container {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.danger {
+            background-color: #e74c3c;
+        }
+        button.danger:hover {
+            background-color: #c0392b;
+        }
+        button.success {
+            background-color: #2ecc71;
+        }
+        button.success:hover {
+            background-color: #27ae60;
+        }
+        button.active {
+            background-color: #2980b9;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .resize-handle {
+            margin-top: 5px;
+            text-align: center;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 0 0 5px 5px;
+            cursor: ns-resize;
+            user-select: none;
+            color: #555;
+            font-size: 12px;
+        }
+        .prescription-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .active-section {
+            border: 2px solid #3498db;
+        }
+        #active-section-indicator {
+            font-weight: bold;
+            color: #3498db;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+            .control-panel {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .control-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Prescription</h1>
+        
+        <div class="prescription-header">
+            <div>
+                <h3>Dr. John Doe</h3>
+                <p>Medical License: MD12345</p>
+                <p>123 Medical Center Dr.</p>
+                <p>Phone: (555) 123-4567</p>
+            </div>
+            <div>
+                <p>Date: <span id="current-date"></span></p>
+                <p>Patient Name: <input type="text" placeholder="Enter patient name"></p>
+                <p>Patient ID: <input type="text" placeholder="Enter patient ID"></p>
+            </div>
+        </div>
+
+        <div id="active-section-indicator">Active Section: Diagnosis</div>
+
+        <div class="control-panel">
+            <div class="control-group">
+                <label for="brush-size">Pen Size:</label>
+                <input type="range" id="brush-size" min="1" max="20" value="3">
+                <span id="size-value">3px</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="brush-color">Pen Color:</label>
+                <input type="color" id="brush-color" value="#000000">
+            </div>
+            
+            <div class="control-group">
+                <label>Tools:</label>
+                <div>
+                    <button id="draw-mode" class="active">Draw</button>
+                    <button id="eraser-mode">Eraser</button>
+                    <button id="text-mode">Add Text</button>
+                    <button id="select-mode">Select</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>History:</label>
+                <div>
+                    <button id="undo" disabled>Undo</button>
+                    <button id="redo" disabled>Redo</button>
+                    <button id="clear-canvas" class="danger">Clear</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>Actions:</label>
+                <div>
+                    <button id="save-prescription" class="success">Save Prescription</button>
+                    <button id="print-prescription">Print</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Diagnosis</div>
+            <div class="canvas-container active-section">
+                <canvas id="diagnosis-canvas" width="1100" height="150"></canvas>
+            </div>
+            <div class="resize-handle" data-canvas="diagnosis-canvas">⋯ Resize ⋯</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Complaints</div>
+            <div class="canvas-container">
+                <canvas id="complaints-canvas" width="1100" height="150"></canvas>
+            </div>
+            <div class="resize-handle" data-canvas="complaints-canvas">⋯ Resize ⋯</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Medication</div>
+            <div class="canvas-container">
+                <canvas id="medication-canvas" width="1100" height="250"></canvas>
+            </div>
+            <div class="resize-handle" data-canvas="medication-canvas">⋯ Resize ⋯</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Instructions</div>
+            <div class="canvas-container">
+                <canvas id="instructions-canvas" width="1100" height="150"></canvas>
+            </div>
+            <div class="resize-handle" data-canvas="instructions-canvas">⋯ Resize ⋯</div>
+        </div>
+
+        <div class="prescription-footer">
+            <div>
+                <p>Refills: 
+                    <select>
+                        <option>None</option>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                    </select>
+                </p>
+            </div>
+            <div>Physician Signature: ____________________</div>
+        </div>
+    </div>
+
+    <script>
+
+        // Set current date
+        const today = new Date();
+        document.getElementById('current-date').textContent = today.toLocaleDateString();
+
+        // Initialize fabric.js canvases
+        const canvasIds = ['diagnosis-canvas', 'complaints-canvas', 'medication-canvas', 'instructions-canvas'];
+        const canvases = {};
+        const history = {};
+        // Set active canvas
+        let activeCanvas = canvases['diagnosis-canvas'];
+        let activeCanvasId = 'diagnosis-canvas';
+
+        canvasIds.forEach(id => {
+            const canvas = new fabric.Canvas(id, {
+                isDrawingMode: true
+            });
+            
+            // Set default brush options
+            canvas.freeDrawingBrush.width = 3;
+            canvas.freeDrawingBrush.color = '#000000';
+            
+            canvases[id] = canvas;
+            
+            // Initialize history for each canvas
+            history[id] = {
+                states: [],
+                currentStateIndex: -1,
+                canUndo: false,
+                canRedo: false
+            };
+            
+            // Save initial state
+            saveCanvasState(id);
+            
+            // Add event listener for object modifications to track history
+            canvas.on('object:added', () => {
+                saveCanvasState(id);
+            });
+            
+            canvas.on('object:modified', () => {
+                saveCanvasState(id);
+            });
+            
+            canvas.on('object:removed', () => {
+                saveCanvasState(id);
+            });
+        });
+
+        
+
+        // Function to save canvas state
+        function saveCanvasState(canvasId) {
+            const canvas = canvases[canvasId];
+            const canvasHistory = history[canvasId];
+            
+            // If we're not at the end of the history, remove all states after current
+            if (canvasHistory.currentStateIndex < canvasHistory.states.length - 1) {
+                canvasHistory.states = canvasHistory.states.slice(0, canvasHistory.currentStateIndex + 1);
+            }
+            
+            // Save current state
+            canvasHistory.states.push(JSON.stringify(canvas));
+            canvasHistory.currentStateIndex = canvasHistory.states.length - 1;
+            
+            // Update undo/redo buttons if the active canvas
+            if (canvasId === activeCanvasId) {
+                updateUndoRedoButtons();
+            }
+        }
+        
+        // Function to restore canvas state
+        function restoreCanvasState(canvasId, stateIndex) {
+            const canvas = canvases[canvasId];
+            const canvasHistory = history[canvasId];
+            
+            if (stateIndex >= 0 && stateIndex < canvasHistory.states.length) {
+                canvas.loadFromJSON(canvasHistory.states[stateIndex], canvas.renderAll.bind(canvas));
+                canvasHistory.currentStateIndex = stateIndex;
+                
+                // Update undo/redo buttons if the active canvas
+                if (canvasId === activeCanvasId) {
+                    updateUndoRedoButtons();
+                }
+            }
+        }
+        
+        // Function to update undo/redo buttons
+        function updateUndoRedoButtons() {
+            const canvasHistory = history[activeCanvasId];
+            
+            const undoButton = document.getElementById('undo');
+            const redoButton = document.getElementById('redo');
+            
+            undoButton.disabled = canvasHistory.currentStateIndex <= 0;
+            redoButton.disabled = canvasHistory.currentStateIndex >= canvasHistory.states.length - 1;
+        }
+
+        // Brush size control
+        const brushSizeEl = document.getElementById('brush-size');
+        const sizeValueEl = document.getElementById('size-value');
+        
+        brushSizeEl.addEventListener('input', function() {
+            const size = parseInt(this.value);
+            sizeValueEl.textContent = `${size}px`;
+            Object.values(canvases).forEach(canvas => {
+                canvas.freeDrawingBrush.width = size;
+            });
+        });
+
+        // Brush color control
+        const brushColorEl = document.getElementById('brush-color');
+        brushColorEl.addEventListener('input', function() {
+            const color = this.value;
+            
+            // Apply color to all canvases
+            Object.values(canvases).forEach(canvas => {
+                canvas.freeDrawingBrush.color = color;
+                
+                // If we're in eraser mode, don't change the color
+                if (document.getElementById('eraser-mode').classList.contains('active')) {
+                    canvas.freeDrawingBrush.color = '#ffffff';
+                }
+            });
+        });
+
+        // Reset tool buttons
+        function resetToolButtons() {
+            document.getElementById('draw-mode').classList.remove('active');
+            document.getElementById('eraser-mode').classList.remove('active');
+            document.getElementById('text-mode').classList.remove('active');
+            document.getElementById('select-mode').classList.remove('active');
+        }
+
+        // Draw mode
+        document.getElementById('draw-mode').addEventListener('click', function() {
+            resetToolButtons();
+            this.classList.add('active');
+            
+            Object.values(canvases).forEach(canvas => {
+                canvas.isDrawingMode = true;
+                canvas.freeDrawingBrush.color = brushColorEl.value;
+            });
+        });
+
+        // Eraser mode
+        document.getElementById('eraser-mode').addEventListener('click', function() {
+            resetToolButtons();
+            this.classList.add('active');
+            
+            Object.values(canvases).forEach(canvas => {
+                canvas.isDrawingMode = true;
+                // Use white color for eraser
+                canvas.freeDrawingBrush.color = '#ffffff';
+            });
+        });
+
+        // Text mode
+        document.getElementById('text-mode').addEventListener('click', function() {
+            resetToolButtons();
+            this.classList.add('active');
+            
+            Object.values(canvases).forEach(canvas => {
+                canvas.isDrawingMode = false;
+            });
+            
+            // Add text to active canvas
+            const text = new fabric.IText('Click to edit text', {
+                left: 50,
+                top: 50,
+                fontFamily: 'Arial',
+                fontSize: 20,
+                fill: brushColorEl.value
+            });
+            
+            activeCanvas.add(text);
+            activeCanvas.setActiveObject(text);
+        });
+
+        // Select mode
+        document.getElementById('select-mode').addEventListener('click', function() {
+            resetToolButtons();
+            this.classList.add('active');
+            
+            Object.values(canvases).forEach(canvas => {
+                canvas.isDrawingMode = false;
+            });
+        });
+
+        // Undo
+        document.getElementById('undo').addEventListener('click', function() {
+            const canvasHistory = history[activeCanvasId];
+            if (canvasHistory.currentStateIndex > 0) {
+                restoreCanvasState(activeCanvasId, canvasHistory.currentStateIndex - 1);
+            }
+        });
+        
+        // Redo
+        document.getElementById('redo').addEventListener('click', function() {
+            const canvasHistory = history[activeCanvasId];
+            if (canvasHistory.currentStateIndex < canvasHistory.states.length - 1) {
+                restoreCanvasState(activeCanvasId, canvasHistory.currentStateIndex + 1);
+            }
+        });
+
+        // Clear canvas
+        document.getElementById('clear-canvas').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear the current section?')) {
+                activeCanvas.clear();
+                saveCanvasState(activeCanvasId);
+            }
+        });
+
+        // Save prescription
+        document.getElementById('save-prescription').addEventListener('click', function() {
+            // Create a JSON representation of all canvases
+            const prescriptionData = {};
+            
+            Object.entries(canvases).forEach(([id, canvas]) => {
+                prescriptionData[id] = JSON.stringify(canvas);
+            });
+            
+            // In a real application, you would send this data to your server
+            // For this demo, we'll just show an alert
+            alert('Prescription saved successfully!');
+            
+            // Alternatively, you could save as images:
+            // const dataURL = canvas.toDataURL('image/png');
+            // const link = document.createElement('a');
+            // link.download = 'prescription.png';
+            // link.href = dataURL;
+            // link.click();
+        });
+
+        // Print prescription
+        document.getElementById('print-prescription').addEventListener('click', function() {
+            window.print();
+        });
+
+        // Set active canvas on click
+        canvasIds.forEach(id => {
+            const container = document.getElementById(id).parentElement;
+            
+            container.addEventListener('click', function() {
+                // Remove active class from all containers
+                document.querySelectorAll('.canvas-container').forEach(el => {
+                    el.classList.remove('active-section');
+                });
+                
+                // Add active class to this container
+                this.classList.add('active-section');
+                
+                // Set active canvas
+                activeCanvas = canvases[id];
+                activeCanvasId = id;
+                
+                // Update active section indicator
+                // const sectionName = this.previousElementSibling.textContent;
+                // document.getElementById('active-section-indicator').textContent = `Active Section: ${sectionName}`;
+                
+                // Update undo/redo buttons
+                updateUndoRedoButtons();
+            });
+        });
+
+        // Resize canvas functionality
+        const resizeHandles = document.querySelectorAll('.resize-handle');
+        
+        resizeHandles.forEach(handle => {
+            let startY;
+            let startHeight;
+            let canvas;
+            let fabricCanvas;
+            
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                
+                // Get the canvas element
+                const canvasId = this.getAttribute('data-canvas');
+                canvas = document.getElementById(canvasId);
+                fabricCanvas = canvases[canvasId];
+                
+                startY = e.clientY;
+                startHeight = parseInt(canvas.height);
+                
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+            });
+            
+            function resize(e) {
+                const newHeight = startHeight + (e.clientY - startY);
+                
+                // Set a minimum height to prevent negative values
+                if (newHeight > 50) {
+                    canvas.height = newHeight;
+                    fabricCanvas.setHeight(newHeight);
+                    fabricCanvas.renderAll();
+                }
+            }
+            
+            function stopResize() {
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+                
+                // Save state after resize
+                const canvasId = canvas.id;
+                saveCanvasState(canvasId);
+            }
+        });
+    </script>
+</body>
+</html>
